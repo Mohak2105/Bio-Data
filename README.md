@@ -5,37 +5,24 @@ Stateless admin portal for Marathi biodata intake. The admin uploads a biodata P
 ## Stack
 
 - Frontend: `React + Vite + TypeScript`
-- Backend: `FastAPI + Pillow + PyMuPDF`
-- OCR priority: `PaddleOCR` first, `Tesseract Marathi` fallback, and direct PDF text extraction when a PDF already contains selectable text
+- Backend: `Node.js + Express`
+- OCR pipeline: direct PDF text extraction first, then `Tesseract.js` OCR for images and scanned PDFs
 
 ## Project Layout
 
 - `frontend/` React admin UI
-- `backend/` FastAPI API, OCR/parser services, JPG renderer
+- `server/` Express API, OCR/parser services, production web server
+- `backend/` legacy Python backend kept for reference during migration
 
-## Backend Setup
+## Local Development
 
 ```bash
-cd backend
-python -m venv .venv
-\.\venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-python -m uvicorn app.main:app --reload --port 8000
+cd server
+npm install
+node index.js
 ```
 
-Optional OCR improvements:
-
-1. Install `PaddlePaddle` first for your OS/Python, then install `paddleocr` for the primary Marathi OCR engine.
-2. Install `Tesseract OCR` with Marathi language data (`mar.traineddata`) if you want the fallback engine.
-3. Set `TESSERACT_CMD` if the `tesseract` executable is not on `PATH`.
-
-Environment variables:
-
-- `PORTAL_CORS_ORIGINS` comma-separated list. Default: `http://localhost:5173,http://127.0.0.1:5173`
-- `TESSERACT_CMD` optional full path to `tesseract.exe`
-- `PADDLEOCR_LANG` optional Paddle language code. Default: `mr`
-
-## Frontend Setup
+In another terminal:
 
 ```bash
 cd frontend
@@ -45,17 +32,41 @@ npm run dev
 
 Environment variables:
 
-- `VITE_API_BASE_URL` default: `http://localhost:8000`
+- `PORT` backend port. Default: `8001`
+- `VITE_API_BASE_URL` frontend API base URL. Default in dev: proxy via Vite
+- `NODE_ENV` set to `production` in containerized deploys
+
+## Production Docker
+
+This repo now includes a production `Dockerfile` for platforms like Coolify.
+
+Build locally:
+
+```bash
+docker build -t marathi-biodata .
+```
+
+Run locally:
+
+```bash
+docker run --rm -p 8001:8001 -e PORT=8001 marathi-biodata
+```
+
+The container:
+
+- builds the frontend into `frontend/dist`
+- installs production server dependencies
+- starts the Express server with `node server/index.js`
+- serves the built frontend and API from the same container
 
 ## API Endpoints
 
 - `POST /api/ocr/preview` multipart upload with `document` and optional `photo`
 - `POST /api/ocr/reparse` JSON re-parse of edited OCR text
-- `POST /api/render/jpg` JSON render request returning `image/jpeg`
 - `GET /api/health` health check
 
 ## Notes
 
 - The app does not use a database.
 - Uploaded files are processed in memory for each request and are not persisted.
-- One biodata template is included: `basic-marathi-v1`.
+- One biodata template is included in the current MVP.
