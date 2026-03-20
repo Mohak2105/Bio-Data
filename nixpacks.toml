@@ -1,0 +1,35 @@
+providers = ["node"]
+
+[variables]
+NODE_ENV = "production"
+PORT = "8001"
+
+[phases.setup]
+aptPkgs = [
+  "ca-certificates",
+  "g++",
+  "libcairo2-dev",
+  "libgif-dev",
+  "libgl1",
+  "libjpeg62-turbo-dev",
+  "libpango1.0-dev",
+  "libpixman-1-dev",
+  "librsvg2-dev",
+  "make",
+  "pkg-config",
+  "python3",
+]
+
+[phases.install]
+cmds = [
+  "cd frontend && npm ci",
+  "cd server && npm ci",
+]
+
+[phases.build]
+cmds = [
+  "cd frontend && npm run build",
+]
+
+[start]
+cmd = "cd server && npm start"

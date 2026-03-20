@@ -1,0 +1,12 @@
+{
+  "name": "marathi-biodata",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "server"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace frontend",
+    "start": "npm run start --workspace server"
+  }
+}
